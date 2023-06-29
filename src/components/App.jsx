@@ -1,47 +1,31 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import Form from './Form/Form';
 import Contacts from './Contacts/Contacts';
 import Input from './Input/Input';
 import Kek from './SeniorCodingExamples/SeniorCodingExamples';
 import { load, save } from '../components/utils/saveandload';
+import AddRandom from './AddRandom/AddRandom';
 
-const initialState = [];
+export const App = () => {
+  //states
+  const [contacts, modifier] = useState(() => load('contacts') ?? []);
+  const [search, searcher] = useState('');
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { name: 'Kek', tel: '+38077700632', id: 0 },
-      { name: 'Ajax', tel: '+102', id: 1 },
-      { name: 'Bob', tel: '+787898', id: 2 },
-      { name: 'Johny', tel: '+373310203', id: 3 },
-      { name: 'Kenny', tel: '+80765436621', id: 4 },
-    ],
-    filter: '',
-  };
+  //updates and storage
 
-  componentDidUpdate(prevProps, prevState) {
-    const { contacts } = this.state;
-    if (contacts !== prevState.contacts) {
-      save(contacts, 'contacts');
-    }
-  }
+  useEffect(() => {
+    save(contacts, 'contacts');
+  }, [contacts]);
 
-  componentDidMount() {
-    const data = load('contacts') ?? initialState;
-
-    this.setState({ contacts: data });
-  }
-
-  deleteItem = id => {
-    this.setState(({ contacts }) => {
-      return {
-        contacts: contacts.filter(el => el.id !== id),
-      };
+  // functions
+  const deleteItem = id => {
+    modifier(() => {
+      return contacts.filter(el => el.id !== id);
     });
   };
 
-  addItem = (name, tel) => {
-    const isExist = this.state.contacts.find(
+  const addItem = (name, tel) => {
+    const isExist = contacts.find(
       e => e.name.toLocaleLowerCase() === name.toLocaleLowerCase()
     );
     if (isExist) {
@@ -49,47 +33,41 @@ export class App extends Component {
       return;
     }
 
-    this.setState(state => {
+    modifier(() => {
       const newSt = [
-        ...state.contacts,
+        ...contacts,
         {
           name: name,
           tel: tel,
           id: name + tel,
         },
       ];
-      return { contacts: newSt };
+      return newSt;
     });
   };
 
-  searchItem = input => {
-    this.setState({
-      filter: input,
-    });
+  const searchItem = input => {
+    searcher(input);
   };
-  filteredcontacts = () => {
-    return this.state.contacts.filter(el =>
-      el.name.toLowerCase().includes(this.state.filter.toLowerCase())
+  const filteredcontacts = () => {
+    return contacts.filter(el =>
+      el.name.toLowerCase().includes(search.toLowerCase())
     );
   };
-  render() {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Input searchItem={this.searchItem} />
-        <Contacts
-          contacts={this.filteredcontacts()}
-          deleteItem={this.deleteItem}
-        />
-        <Form addItem={this.addItem} />
-        <Kek />
-      </div>
-    );
-  }
-}
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Input searchItem={searchItem} />
+      <Contacts contacts={filteredcontacts()} deleteItem={deleteItem} />
+      <Form addItem={addItem} />
+      <Kek />
+      <AddRandom addItem={addItem} />
+    </div>
+  );
+};
