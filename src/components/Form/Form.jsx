@@ -2,16 +2,19 @@ import css from './Form.module.css';
 import PropTypes from 'prop-types';
 
 const Form = ({ addItem }) => {
+  const handleSubmit = e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const name = form.name.value;
+    const tel = form.tel.value;
+    addItem(name, tel);
+    form.reset();
+  };
   return (
     <form
       className={css.form}
       onSubmit={e => {
-        e.preventDefault();
-        const form = e.currentTarget;
-        const name = form.name.value;
-        const tel = form.tel.value;
-        addItem(name, tel);
-        form.reset();
+        handleSubmit(e);
       }}
     >
       <input className={css.item} type="text" name="name" placeholder="name" />

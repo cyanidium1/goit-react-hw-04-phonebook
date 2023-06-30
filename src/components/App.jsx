@@ -3,24 +3,28 @@ import Form from './Form/Form';
 import Contacts from './Contacts/Contacts';
 import Input from './Input/Input';
 import Kek from './SeniorCodingExamples/SeniorCodingExamples';
-import { load, save } from '../components/utils/saveandload';
+import { load } from '../components/utils/saveandload';
 import AddRandom from './AddRandom/AddRandom';
 
 export const App = () => {
   //states
-  const [contacts, modifier] = useState(() => load('contacts') ?? []);
+  const [contacts, updContacts] = useState(() => load('contacts') ?? []);
   const [search, searcher] = useState('');
 
   //updates and storage
 
   useEffect(() => {
-    save(contacts, 'contacts');
+    try {
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    } catch (e) {
+      console.log('error message:', e);
+    }
   }, [contacts]);
 
   // functions
   const deleteItem = id => {
-    modifier(() => {
-      return contacts.filter(el => el.id !== id);
+    updContacts(prevState => {
+      return prevState.filter(el => el.id !== id);
     });
   };
 
@@ -33,9 +37,9 @@ export const App = () => {
       return;
     }
 
-    modifier(() => {
+    updContacts(prevState => {
       const newSt = [
-        ...contacts,
+        ...prevState,
         {
           name: name,
           tel: tel,
